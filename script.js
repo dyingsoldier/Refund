@@ -4,14 +4,15 @@ const expense = document.getElementById("expense")
 const category = document.getElementById("category")
 const amount = document.getElementById("amount")
 
-const ul = document.querySelector("ul")
+const expenseList = document.querySelector("ul")
+const expenseTotal = document.querySelector("aside header h2")
+const expenseQuantity = document.querySelector("aside header p span")
 
 // capturando eventos do amount
 amount.addEventListener("input", function () {
   let value = amount.value.replace(/\D/g, "")
   value = Number(value) / 100
   amount.value = formatCurrencyBRL(value)
-  console.log(value)
 })
 
 // formatando o valor para real
@@ -36,51 +37,90 @@ form.addEventListener("submit", function (e) {
     created_at: new Date().toLocaleString("pt-Br"),
   }
 
-  // console.log(newExpense)
   addExpense(newExpense)
 })
 
 function addExpense(newExpense) {
   try {
-    const templateExpense = `
-                <li class="expense">
-              <img src="./img/${newExpense.category_id}.svg" alt="${newExpense.category_name}" />
+    const expenseItem = document.createElement("li")
+    expenseItem.classList.add("expense")
 
-              <div class="expense-info">
-                <strong>${newExpense.expense}</strong>
-                <span>${newExpense.category_name}</span>
-              </div>
+    const expenseIcon = document.createElement("img")
+    expenseIcon.setAttribute("src", `img/${newExpense.category_id}.svg`)
+    expenseIcon.setAttribute = ("alt", newExpense.category_name)
 
-              <span class="expense-amount"><small>R$</small>${newExpense.amount}</span>
+    const expenseInfo = document.createElement("div")
+    expenseInfo.classList.add("expense-info")
 
-              <img src="./img/remove.svg" alt="remover" class="remove-icon" />
-            </li>
-            `
-    // const expenseList = document.createElement("li")
-    // expenseList.classList.add("expense")
+    const expenseName = document.createElement("strong")
+    expenseName.textContent = newExpense.expense
 
-    // const expenseIcon = document.createElement("img")
-    // // expenseIcon.setAttribute("src", `./img/${newExpense.category_name}.svg`)
-    // expenseIcon.src = `img/${newExpense.category_id}.svg`
-    // expenseIcon.alt = newExpense.category_name
+    const expenseCategory = document.createElement("span")
+    expenseCategory.textContent = newExpense.category_name
 
-    // const expenseTittle = document.createElement("div")
-    // expenseTittle.classList.add("expense-info")
+    const expenseValue = document.createElement("span")
+    expenseValue.classList.add("expense-amount")
+    expenseValue.innerHTML = `<small>R$</small>${newExpense.amount
+      .toUpperCase()
+      .replace("R$", "")
+      .trim()}`
 
-    // const strong = document.createElement("strong")
-    // strong.textContent = newExpense.expense
-    // const span = document.createElement("span")
-    // span.textContent = newExpense.category_name
+    const deleteButton = document.createElement("img")
+    deleteButton.classList.add("remove-icon")
+    deleteButton.setAttribute("src", "img/remove.svg")
+    deleteButton.setAttribute("alt", "remove")
 
-    // expenseTittle.append(strong)
-    // expenseTittle.append(span)
+    // adicionando o Strong e o Span dentro da div
+    expenseInfo.append(expenseName, expenseCategory)
 
-    // expenseList.append(expenseIcon)
-    // expenseList.append(expenseTittle)
+    // adicionando os icones e valores na li criada
+    expenseItem.append(expenseIcon, expenseInfo, expenseValue, deleteButton)
 
-    ul.innerHTML += templateExpense
+    // adicionando a li criada dentro da ul
+    expenseList.append(expenseItem)
+
+    updateValues()
+
+    form.reset()
   } catch (error) {
     // console.log(error)
     alert("não foi possivel por " + error)
+  }
+}
+
+function updateValues() {
+  try {
+    // pegando a ul e vendo quantas unidades tem dentro
+    const items = expenseList.children
+    // pegando a span e alterando a palavra caso despesa seja maior que 1
+    expenseQuantity.textContent = `${items.length} ${
+      items.length > 1 ? "Despesas" : "Despesa"
+    }`
+
+    // total de itens dentro da lista
+    let total = 0
+
+    // criando um item que sera adicionado a cada li adicionado na ul
+    for (let item = 0; item < items.length; item++) {
+      // selecionando o span com a class expense-amount
+      const itemAmount = items[item].querySelector(".expense-amount")
+
+      // remover caracteres não numericos
+      let value = itemAmount.textContent.replace(/[^\d]/g, "").replace(",", ".")
+
+      value = parseFloat(value)
+
+      if (isNaN(value)) {
+        return alert("o valor não é um numero")
+      }
+
+      total += Number(value)
+    }
+
+    expenseTotal.textContent = total
+    console.log(expenseTotal)
+  } catch (error) {
+    console.log(error)
+    // alert(error)
   }
 }
