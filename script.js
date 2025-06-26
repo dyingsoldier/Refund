@@ -40,6 +40,7 @@ form.addEventListener("submit", function (e) {
   addExpense(newExpense)
 })
 
+// criando os elementos apos preencher as informacoes
 function addExpense(newExpense) {
   try {
     const expenseItem = document.createElement("li")
@@ -79,9 +80,9 @@ function addExpense(newExpense) {
     // adicionando a li criada dentro da ul
     expenseList.append(expenseItem)
 
+    clearForm()
     updateValues()
-
-    form.reset()
+    // form.reset()
   } catch (error) {
     // console.log(error)
     alert("não foi possivel por " + error)
@@ -106,7 +107,9 @@ function updateValues() {
       const itemAmount = items[item].querySelector(".expense-amount")
 
       // remover caracteres não numericos
-      let value = itemAmount.textContent.replace(/[^\d]/g, "").replace(",", ".")
+      let value = itemAmount.textContent
+        .replace(/[^\d,]/g, "")
+        .replace(",", ".")
 
       value = parseFloat(value)
 
@@ -117,10 +120,36 @@ function updateValues() {
       total += Number(value)
     }
 
-    expenseTotal.textContent = total
-    console.log(expenseTotal)
+    // criando o small
+    const symbolBRL = document.createElement("small")
+    symbolBRL.textContent = "R$"
+
+    // pegando o total e usando a conversão para reais e retirando o R$ que ja vem na formatação
+    total = formatCurrencyBRL(total).toUpperCase().replace("R$", "").trim()
+
+    // esvaziando o h2
+    expenseTotal.innerHTML = ""
+
+    // inserindo o small com R$ + total formatado sem o R$
+    expenseTotal.append(symbolBRL, total)
   } catch (error) {
     console.log(error)
     // alert(error)
   }
+}
+
+expenseList.addEventListener("click", function (event) {
+  if (event.target.classList.contains("remove-icon")) {
+    const item = event.target.closest(".expense")
+    item.remove()
+  }
+  updateValues()
+})
+
+function clearForm() {
+  expense.value = ""
+  amount.value = ""
+  category.value = ""
+
+  expense.focus()
 }
